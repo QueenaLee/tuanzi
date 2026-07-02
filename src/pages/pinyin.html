@@ -1,0 +1,80 @@
+<!-- 拼音学科页面 -->
+<template id="tpl-pinyin">
+  <div class="topbar">
+    <button class="back-btn" onclick="showPage('home')" aria-label="返回首页">←</button>
+    <h2>拼 汉语拼音</h2>
+  </div>
+  <!-- 子菜单 -->
+  <div id="pinyin-home">
+    <div class="sub-menu">
+      <div class="sub-card" onclick="showSub('pinyin','initials')">
+        <span class="sub-icon">🔡</span>
+        <div class="sub-label">声母 &amp; 韵母</div>
+        <div class="sub-desc">b p m f … a o e i u</div>
+      </div>
+      <div class="sub-card" onclick="showSub('pinyin','tones')">
+        <span class="sub-icon">🎵</span>
+        <div class="sub-label">声调练习</div>
+        <div class="sub-desc">一二三四声</div>
+      </div>
+      <div class="sub-card" onclick="showSub('pinyin','blend')">
+        <span class="sub-icon">➕</span>
+        <div class="sub-label">拼读练习</div>
+        <div class="sub-desc">声母＋韵母＝音节</div>
+      </div>
+      <div class="sub-card" onclick="showSub('pinyin','songs')">
+        <span class="sub-icon">🎶</span>
+        <div class="sub-label">拼音儿歌</div>
+        <div class="sub-desc">声调歌·ü儿歌</div>
+      </div>
+    </div>
+  </div>
+  <!-- 声母韵母 -->
+  <div id="pinyin-initials" style="display:none">
+    <div style="display:flex;gap:8px;padding:10px 16px;background:white;border-bottom:2px solid #EEE">
+      <button class="cat-tab active" id="py-tab-i" onclick="pySelectTab('initials')">🟠 声母 23个</button>
+      <button class="cat-tab" id="py-tab-f" onclick="pySelectTab('finals')">🔵 韵母 24个</button>
+    </div>
+    <div style="padding:8px 16px 2px;font-size:12px;font-weight:700;color:var(--muted)">
+      点任意卡片听发音 👇
+    </div>
+    <div id="py-chip-grid"></div>
+    <div id="py-detail-card" style="display:none"></div>
+    <div style="height:12px"></div>
+  </div>
+  <!-- 声调练习 -->
+  <div id="pinyin-tones" style="display:none">
+    <div class="quiz-wrap">
+      <div class="progress-bar-wrap">
+        <div class="progress-label" id="py-tone-label">第 1 题 / 共 10 题</div>
+        <div class="progress-track"><div class="progress-fill" id="py-tone-fill" style="width:10%"></div></div>
+      </div>
+      <div class="quiz-question">
+        <div class="q-label">这个字是第几声？</div>
+        <div class="q-word" id="py-tone-char" style="font-size:60px"></div>
+        <div class="q-sound" onclick="pySpeakCurrent()" title="听读音">🔊</div>
+      </div>
+      <div class="quiz-options" id="py-tone-opts" style="grid-template-columns:1fr 1fr;"></div>
+      <button class="quiz-next-btn" id="py-tone-next" onclick="pyToneNext()" disabled>下一题 →</button>
+    </div>
+  </div>
+  <!-- 拼读练习 -->
+  <div id="pinyin-blend" style="display:none">
+    <div style="padding:12px 20px 4px;font-size:14px;color:var(--muted);font-weight:600;text-align:center">
+      点声母，再点韵母，听拼合读音
+    </div>
+    <div class="py-blend-display" id="py-blend-display">
+      <span id="py-b-init" style="color:var(--coral)">_</span>
+      <span class="plus">＋</span>
+      <span id="py-b-final" style="color:var(--blue)">_</span>
+      <span class="plus">＝</span>
+      <span class="result" id="py-b-result">？</span>
+    </div>
+    <div id="py-b-init-grid"></div>
+    <div id="py-b-final-grid"></div>
+  </div>
+  <!-- 儿歌 -->
+  <div id="pinyin-songs" style="display:none;padding-bottom:20px">
+    <div id="py-songs-list"></div>
+  </div>
+</template>

@@ -1,0 +1,61 @@
+<!-- 数学学科页面集合: math / math-rhyme / math-times -->
+<template id="tpl-math">
+  <div class="topbar">
+    <button class="back-btn" onclick="showPage('home')" aria-label="返回首页">←</button>
+    <h2>🔢 加减法练习</h2>
+  </div>
+  <!-- 难度选择 -->
+  <div id="math-level-screen">
+    <div style="text-align:center;padding:20px 20px 8px">
+      <div style="font-size:52px">🔢</div>
+      <div style="font-size:20px;font-weight:800;margin-top:4px">选择难度</div>
+    </div>
+    <div class="math-level-wrap">
+      <div class="math-level-btn lvl-easy"   onclick="startMathGame(10)">
+        10 以内 <div class="sub">加法 &amp; 减法，超简单</div>
+      </div>
+      <div class="math-level-btn lvl-medium" onclick="startMathGame(20)">
+        20 以内 <div class="sub">进阶挑战，加油！</div>
+      </div>
+      <div class="math-level-btn lvl-hard"   onclick="startMathGame(100)">
+        100 以内 <div class="sub">数学小达人</div>
+      </div>
+    </div>
+  </div>
+  <!-- 答题区 -->
+  <div id="math-game-screen" style="display:none">
+    <div class="math-wrap">
+      <div class="progress-bar-wrap">
+        <div class="progress-label" id="math-prog-label">第 1 题 / 共 10 题</div>
+        <div class="progress-track"><div class="progress-fill" id="math-prog-fill" style="width:10%"></div></div>
+      </div>
+      <div class="math-expr-box">
+        <div class="math-expr" id="math-expr">3 + 5 = ?</div>
+      </div>
+      <div class="math-opts" id="math-opts"></div>
+      <button class="quiz-next-btn" id="math-next" onclick="mathNext()" disabled style="margin-top:16px">下一题 →</button>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-math-rhyme">
+  <div class="topbar">
+    <button class="back-btn" onclick="showPage('home')" aria-label="返回首页">←</button>
+    <h2>🎵 加减法口诀</h2>
+  </div>
+  <div style="padding:14px 20px 40px; max-width:520px; margin:0 auto;" id="math-rhyme-list"></div>
+</template>
+
+<template id="tpl-math-times">
+  <div class="topbar">
+    <button class="back-btn" onclick="showPage('home')" aria-label="返回首页">←</button>
+    <h2>✖️ 乘法口诀表</h2>
+  </div>
+  <div style="padding:12px 12px 40px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;max-width:560px;margin:0 auto 10px;gap:8px;">
+      <div style="font-size:13px;color:var(--muted);font-weight:600;">点格子听单句 🔊</div>
+      <button id="times-read-all-btn" onclick="speakTimesAll()" style="background:linear-gradient(135deg,#FFD93D,#FFAA00);color:#5a3a00;border:none;border-radius:18px;padding:8px 16px;font-size:14px;font-weight:800;box-shadow:0 3px 0 #C98800;cursor:pointer;">▶ 读整体口诀</button>
+    </div>
+    <div id="times-table" style="display:grid;grid-template-columns:repeat(9,1fr);gap:4px;max-width:560px;margin:0 auto;"></div>
+  </div>
+</template>
