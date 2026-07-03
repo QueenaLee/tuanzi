@@ -6,10 +6,14 @@ let mathQueue   = [];
 let mathIdx     = 0;
 let mathCorrect = 0;
 let mathAnswered = false;
+let mathAutoNextTimer = null;  // 答题后自动切换下一题的计时器
+const MATH_AUTO_NEXT_DELAY = 3000;  // 答题后 3 秒自动进入下一题
+let mathMode = 'arithmetic';  // 'arithmetic' 加减法 | 'compare' 比大小
 function startMathGame(max) {
   mathMaxNum = max;
   mathQueue  = Array.from({length:10}, () => genMathQ(max));
   mathIdx    = 0; mathCorrect = 0; mathAnswered = false;
+  mathMode   = 'arithmetic';
   // 先跳转到数学页，再显示答题区
   showPage('math');
   document.getElementById('math-level-screen').style.display = 'none';
@@ -31,10 +35,46 @@ function genMathQ(max) {
     if (d >= 0 && d <= max + 5 && d !== ans) decoys.add(d);
   }
 
-  return { expr: `${a} ${op === '+' ? '＋' : '－'} ${b} ＝ ？`, ans, opts: shuffle([...decoys]) };
+  return { type: 'arithmetic', expr: `${a} ${op === '+' ? '＋' : '－'} ${b} ＝ ？`, a, b, op, ans, opts: shuffle([...decoys]) };
+}
+
+// 数字 → 中文朗读（10 以内用"一二三"，≥10 读数字）
+function mathNumToZh(n) {
+  const ZH = ['零','一','二','三','四','五','六','七','八','九','十'];
+  if (n <= 10) return ZH[n];
+  if (n < 20) return '十' + (n % 10 === 0 ? '' : ZH[n % 10]);
+  if (n < 100) {
+    const t = Math.floor(n / 10), o = n % 10;
+    return ZH[t] + '十' + (o === 0 ? '' : ZH[o]);
+  }
+  return String(n).split('').map(d => ZH[+d] || d).join('');
+}
+
+// 朗读题目：3+4=? → "三加四等于几"；答题后朗读答案："三加四等于七"
+function speakMathQ(q, revealAns) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const opWord = q.op === '+' ? '加' : '减';
+  const aZh = mathNumToZh(q.a);
+  const bZh = mathNumToZh(q.b);
+  const text = revealAns
+    ? `${aZh}${opWord}${bZh}等于${mathNumToZh(q.ans)}`
+    : `${aZh}${opWord}${bZh}等于几`;
+  const u = _makeUtterance(text, 'zh-CN');
+  u.rate = 0.85; u.pitch = 1.0;
+  _safeSpeak(u);
 }
 
 function randInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+
+// 统一朗读入口：根据当前题型分发
+function speakCurrentMathQ() {
+  const q = mathQueue[mathIdx];
+  if (!q) return;
+  if (q.type === 'compare-symbol') speakCompareSymbolQ(q, false);
+  else if (q.type === 'compare-blank') speakCompareBlankQ(q, false);
+  else speakMathQ(q, false);
+}
 
 function renderMathQ() {
   if (mathIdx >= mathQueue.length) { showMathResult(); return; }
@@ -47,22 +87,43 @@ function renderMathQ() {
   document.getElementById('math-next').disabled = true;
   const colors = ['#FFE4CC','#D0EEFF','#D8FFD8','#F0D8FF'];
   document.getElementById('math-opts').innerHTML = q.opts.map((o,i) => `
-    <div class="math-opt" style="background:${colors[i]}"
-      onclick="mathSelect(this,${o},${q.ans})">${o}</div>
+    <div class="math-opt" style="background:${colors[i]};${q.type === 'compare-symbol' ? 'font-size:40px;' : ''}"
+      onclick="mathSelect(this,'${o}','${q.ans}')">${o}</div>
   `).join('');
+  // 题目展示后自动朗读一遍题目
+  setTimeout(() => speakCurrentMathQ(), 250);
 }
 
 function mathSelect(el, chosen, ans) {
   if (mathAnswered) return;
-  mathAnswered = true;
-  const ok = chosen === ans;
-  el.classList.add(ok ? 'correct' : 'wrong');
-  if (ok) { mathCorrect++; burst(el); }
-
-  document.getElementById('math-next').disabled = false;
+  if (el.classList.contains('wrong')) return;  // 已选错的选项不再响应
+  const ok = String(chosen) === String(ans);
+  if (ok) {
+    mathAnswered = true;
+    el.classList.add('correct');
+    mathCorrect++;
+    burst(el);
+    // 答对后朗读完整答案
+    const q = mathQueue[mathIdx];
+    setTimeout(() => {
+      if (q.type === 'compare-symbol') speakCompareSymbolQ(q, true);
+      else if (q.type === 'compare-blank') speakCompareBlankQ(q, true);
+      else speakMathQ(q, true);
+    }, 350);
+    document.getElementById('math-next').disabled = false;
+    // 答对后 3 秒自动进入下一题
+    if (mathAutoNextTimer) clearTimeout(mathAutoNextTimer);
+    mathAutoNextTimer = setTimeout(() => { mathAutoNextTimer = null; mathNext(); }, MATH_AUTO_NEXT_DELAY);
+  } else {
+    el.classList.add('wrong');
+    // 选错不锁定，允许继续选其他选项
+  }
 }
 
-function mathNext() { mathIdx++; renderMathQ(); }
+function mathNext() {
+  if (mathAutoNextTimer) { clearTimeout(mathAutoNextTimer); mathAutoNextTimer = null; }
+  mathIdx++; renderMathQ();
+}
 
 function showMathResult() {
   document.getElementById('math-game-screen').style.display = 'none';
@@ -75,6 +136,90 @@ function showMathResult() {
   document.getElementById('result-replay-btn').onclick = () => { showPage('home'); switchSubjectTab('math'); };
   showPage('result');
   if (mathCorrect >= 8) setTimeout(bigBurst, 300);
+}
+
+/* ═══════════════════════════════════════════
+   COMPARE  比大小
+   两种题型随机：
+     ① 符号题：3 ○ 5，选项 > < ≥ ≤ =
+     ② 填空题：X 比 Y 多/少 Z，X/Y/Z 中随机一个位置是 ？
+═══════════════════════════════════════════ */
+function startCompareGame() {
+  mathQueue = Array.from({length: 10}, () => genCompareQ());
+  mathIdx = 0; mathCorrect = 0; mathAnswered = false;
+  mathMode = 'compare';
+  showPage('math');
+  document.getElementById('math-level-screen').style.display = 'none';
+  document.getElementById('math-game-screen').style.display = 'block';
+  renderMathQ();
+}
+
+const COMPARE_SYMBOL_ZH = { '>': '大于', '<': '小于', '≥': '大于等于', '≤': '小于等于', '=': '等于' };
+
+function genCompareQ() {
+  return Math.random() < 0.5 ? genCompareSymbolQ() : genCompareBlankQ();
+}
+
+// 题型①：符号题  "3 ○ 5"  选项 > < ≥ ≤ =
+function genCompareSymbolQ() {
+  const a = randInt(0, 10);
+  const b = randInt(0, 10);
+  let sym;
+  if (a > b) sym = '>';
+  else if (a < b) sym = '<';
+  else sym = '=';
+  const opts = ['>', '<', '≥', '≤', '='];
+  return { type: 'compare-symbol', expr: `${a} ○ ${b}`, a, b, ans: sym, opts };
+}
+
+// 题型②：填空题  "X 比 Y 多/少 Z"，X/Y/Z 中随机一个位置是 ？
+function genCompareBlankQ() {
+  let x = randInt(1, 10);
+  let y = randInt(1, 10);
+  if (x === y) { y = x === 10 ? x - 1 : x + 1; }
+  const diff = Math.abs(x - y);
+  const isMore = x > y;
+  const blankPos = randInt(0, 2);
+  const xVal = blankPos === 0 ? '？' : x;
+  const yVal = blankPos === 1 ? '？' : y;
+  const zVal = blankPos === 2 ? '？' : diff;
+  const ans = blankPos === 0 ? x : (blankPos === 1 ? y : diff);
+  const decoys = new Set([ans]);
+  while (decoys.size < 4) {
+    const d = randInt(0, 10);
+    if (d !== ans) decoys.add(d);
+  }
+  return {
+    type: 'compare-blank',
+    expr: `${xVal} 比 ${yVal} ${isMore ? '多' : '少'} ${zVal}`,
+    x: xVal, y: yVal, z: zVal, isMore, blankPos, ans,
+    opts: shuffle([...decoys])
+  };
+}
+
+function speakCompareSymbolQ(q, revealAns) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const aZh = mathNumToZh(q.a);
+  const bZh = mathNumToZh(q.b);
+  const text = revealAns
+    ? `${aZh}${COMPARE_SYMBOL_ZH[q.ans]}${bZh}`
+    : `${aZh}和${bZh}之间填什么符号`;
+  const u = _makeUtterance(text, 'zh-CN');
+  u.rate = 0.85; u.pitch = 1.0;
+  _safeSpeak(u);
+}
+
+function speakCompareBlankQ(q, revealAns) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const xZh = q.x === '？' ? (revealAns ? mathNumToZh(q.ans) : '几') : mathNumToZh(q.x);
+  const yZh = q.y === '？' ? (revealAns ? mathNumToZh(q.ans) : '几') : mathNumToZh(q.y);
+  const zZh = q.z === '？' ? (revealAns ? mathNumToZh(q.ans) : '几') : mathNumToZh(q.z);
+  const text = `${xZh}比${yZh}${q.isMore ? '多' : '少'}${zZh}`;
+  const u = _makeUtterance(text, 'zh-CN');
+  u.rate = 0.85; u.pitch = 1.0;
+  _safeSpeak(u);
 }
 /* ═══════════════════════════════════════════
    MATH RHYME  10以内加减法顺口溜

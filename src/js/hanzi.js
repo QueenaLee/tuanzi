@@ -203,6 +203,8 @@ function hzReplayStroke() {
 
 // 看图猜字
 let hzQuizQueue=[], hzQuizIdx=0, hzQuizAnswered=false;
+let hzQuizAutoNextTimer = null;  // 答对后自动切换下一题的计时器
+const HZ_AUTO_NEXT_DELAY = 3000;  // 答对后 3 秒自动进入下一题
 // emoji 适合看图猜字的判断：具体事物类才出题，抽象符号类不出
 const _QUIZ_EMOJI_BLACKLIST = new Set([
   '✅','❌','✔️','✖️','➕','➖','🟰','⚖️','📏','📐','🔄','🔁','⬆️','⬇️','➡️','⬅️',
@@ -266,10 +268,16 @@ function hzQuizSelect(el,chosen,correct){
     el.classList.add('correct');
     burst(el);
     document.getElementById('hz-quiz-next').disabled=false;
+    // 答对后 3 秒自动进入下一题
+    if (hzQuizAutoNextTimer) clearTimeout(hzQuizAutoNextTimer);
+    hzQuizAutoNextTimer = setTimeout(() => { hzQuizAutoNextTimer = null; hzQuizNext(); }, HZ_AUTO_NEXT_DELAY);
   }else{
     el.classList.add('wrong');
     // 选错不锁定，允许继续选其他选项
   }
 }
 
-function hzQuizNext(){ hzQuizIdx++; hzRenderQuizQ(); }
+function hzQuizNext(){
+  if (hzQuizAutoNextTimer) { clearTimeout(hzQuizAutoNextTimer); hzQuizAutoNextTimer = null; }
+  hzQuizIdx++; hzRenderQuizQ();
+}

@@ -10,12 +10,15 @@
       <div style="font-size:52px">🔢</div>
       <div style="font-size:20px;font-weight:800;margin-top:4px">选择难度</div>
     </div>
-    <div class="math-level-wrap">
+    <div class="math-level-grid">
       <div class="math-level-btn lvl-easy"   onclick="startMathGame(10)">
-        10 以内 <div class="sub">加法 &amp; 减法，超简单</div>
+        10 以内 <div class="sub">加法 &amp; 减法</div>
+      </div>
+      <div class="math-level-btn lvl-compare" onclick="startCompareGame()">
+        比大小 <div class="sub">符号 &amp; 填空</div>
       </div>
       <div class="math-level-btn lvl-medium" onclick="startMathGame(20)">
-        20 以内 <div class="sub">进阶挑战，加油！</div>
+        20 以内 <div class="sub">进阶挑战</div>
       </div>
       <div class="math-level-btn lvl-hard"   onclick="startMathGame(100)">
         100 以内 <div class="sub">数学小达人</div>
@@ -30,7 +33,7 @@
         <div class="progress-track"><div class="progress-fill" id="math-prog-fill" style="width:10%"></div></div>
       </div>
       <div class="math-expr-box">
-        <div class="math-expr" id="math-expr">3 + 5 = ?</div>
+        <div class="math-expr" id="math-expr" style="font-size:72px;cursor:pointer;" onclick="speakCurrentMathQ()">3 + 5 = ?</div>
       </div>
       <div class="math-opts" id="math-opts"></div>
       <button class="quiz-next-btn" id="math-next" onclick="mathNext()" disabled style="margin-top:16px">下一题 →</button>

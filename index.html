@@ -299,8 +299,10 @@
   /* ── 加减法 ── */
   .math-level-wrap { display: flex; flex-direction: column; gap: 14px; padding: 20px; max-width: 420px; margin: 0 auto; }
 
+  .math-level-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 20px; max-width: 420px; margin: 0 auto; }
+
   .math-level-btn {
-    padding: 22px; border-radius: 22px; font-size: 22px; font-weight: 800;
+    padding: 22px 10px; border-radius: 22px; font-size: 22px; font-weight: 800;
     text-align: center; cursor: pointer; border: 3px solid transparent;
     box-shadow: 0 6px 0 rgba(0,0,0,0.12);
     transition: transform 0.15s, box-shadow 0.15s;
@@ -312,11 +314,13 @@
 
   .math-level-btn .sub { font-size: 14px; font-weight: 600; color: rgba(0,0,0,0.45); margin-top: 4px; }
 
-  .lvl-easy   { background: linear-gradient(135deg,#EDFFF0,#C8F8D0); border-color: #60C870; color: #006020; box-shadow: 0 6px 0 #40A850; }
+  .lvl-easy    { background: linear-gradient(135deg,#EDFFF0,#C8F8D0); border-color: #60C870; color: #006020; box-shadow: 0 6px 0 #40A850; }
 
-  .lvl-medium { background: linear-gradient(135deg,#FFF8E0,#FFE8A0); border-color: #FFD700; color: #806000; box-shadow: 0 6px 0 #C8A800; }
+  .lvl-compare { background: linear-gradient(135deg,#E8F4FF,#C8E8FF); border-color: #70B8FF; color: #003870; box-shadow: 0 6px 0 #2070C0; }
 
-  .lvl-hard   { background: linear-gradient(135deg,#FFE8E8,#FFB8B8); border-color: #FF8080; color: #800020; box-shadow: 0 6px 0 #D04040; }
+  .lvl-medium  { background: linear-gradient(135deg,#FFF8E0,#FFE8A0); border-color: #FFD700; color: #806000; box-shadow: 0 6px 0 #C8A800; }
+
+  .lvl-hard    { background: linear-gradient(135deg,#FFE8E8,#FFB8B8); border-color: #FF8080; color: #800020; box-shadow: 0 6px 0 #D04040; }
 
   .math-wrap  { padding: 12px 20px; max-width: 520px; margin: 0 auto; }
 
@@ -854,6 +858,7 @@
     .home-hero h1 { font-size: 24px; }
     .home-hero .mascot { font-size: 48px; }
 
+    .math-expr { font-size: 56px; }
   }
 
   .quiz-opt, .match-card, .wf-card, .math-opt, .py-chip, .ph-letter-card, .ph-blend-card, .module-card, .sub-card, .hz-card, .times-cell, button, [onclick] { touch-action: manipulation; }
@@ -950,11 +955,11 @@
 <script src="src/data/pinyin.js?v=3"></script>
 <script src="src/data/phonics.js?v=3"></script>
 <script src="src/data/hanzi.js?v=3"></script>
-<script src="src/js/common.js?v=2"></script>
+<script src="src/js/common.js?v=4"></script>
 <script src="src/js/english.js?v=2"></script>
 <script src="src/js/pinyin.js?v=2"></script>
-<script src="src/js/hanzi.js?v=2"></script>
-<script src="src/js/math.js?v=2"></script>
+<script src="src/js/hanzi.js?v=3"></script>
+<script src="src/js/math.js?v=6"></script>
 <script>
 // 启动:fetch 4 个学科页面文件 → 解析 <template> → 按原 id 填充到对应容器 → 调用 init
 (async () => {

@@ -81,6 +81,8 @@ let quizQueue = [];
 let quizIdx = 0;
 let quizCorrect = 0;
 let quizAnswered = false;
+let quizAutoNextTimer = null;  // 答对后自动切换下一题的计时器
+const AUTO_NEXT_DELAY = 3000;  // 答对后 3 秒自动进入下一题
 let quizCurrentWord = null;
 let lastGameMode = 'quiz';
 function getImageWords() {
@@ -140,6 +142,9 @@ function quizSelect(el, chosen, correct) {
     quizCorrect++;
     burst(el);
     document.getElementById('quiz-next').disabled = false;
+    // 答对后 3 秒自动进入下一题
+    if (quizAutoNextTimer) clearTimeout(quizAutoNextTimer);
+    quizAutoNextTimer = setTimeout(() => { quizAutoNextTimer = null; quizNext(); }, AUTO_NEXT_DELAY);
   } else {
     el.classList.add('wrong');
     // 选错不锁定，允许继续选其他选项
@@ -147,6 +152,7 @@ function quizSelect(el, chosen, correct) {
 }
 
 function quizNext() {
+  if (quizAutoNextTimer) { clearTimeout(quizAutoNextTimer); quizAutoNextTimer = null; }
   quizIdx++;
   renderQuizQuestion();
 }
@@ -457,7 +463,7 @@ function shuffle(arr) {
 /* ═══════════════════════════════════════════
    FLASH MEMO  十秒速记
    流程: 分类选择 → 逐词:
-     ① 音节拆读阶段: 逐音节高亮朗读, 慢速
+     ① 整体朗读: 整词朗读一遍 + 中文释义
      ② 复读阶段: 整词自动朗读10遍, 倒计时圆环
      → 下一词 / 全部完成后显示结果
 ═══════════════════════════════════════════ */
@@ -526,58 +532,32 @@ function flashRunWord() {
   document.getElementById('flash-word-full').style.display = 'none';
   document.getElementById('flash-dots').style.display = 'none';
   document.getElementById('flash-timer-wrap').style.display = 'none';
-  document.getElementById('flash-hint').textContent = '跟我一起读每个音节 👇';
+  document.getElementById('flash-syllable-display').style.display = 'none';
+  document.getElementById('flash-hint').textContent = '听一遍整体朗读 👂';
   // Phase badge
   setBadge('syllable');
-  // 构建音节色块
-  const syls = SYLLABLES[word.en] || [word.en];
-  const sylRow = document.getElementById('flash-syllable-display');
-  sylRow.style.display = 'flex';
-  sylRow.innerHTML = syls.map((s, i) =>
-    `<span class="syl-chip syl-${i % 4}" id="syl-${i}">${s}</span>`
-  ).join('');
   // 停止旧计时器
   flashTimers.forEach(t => clearTimeout(t)); flashTimers = [];
   speechSynthesis.cancel();
-  // ── 阶段①: 逐音节高亮 + 朗读 ──
-  // 每个音节单独朗读（按音节发音，而非把整串当单词读），与高亮同步
-  let offset = 300;
-  syls.forEach((s, i) => {
-    const t1 = setTimeout(() => {
-      playTick();  // 卡点声
-      document.querySelectorAll('.syl-chip').forEach(c => c.classList.remove('active'));
-      document.getElementById(`syl-${i}`)?.classList.add('active');
-      speakSyllableChunk(s);  // 朗读当前音节
-    }, offset);
-    flashTimers.push(t1);
-    offset += SYLLABLE_GAP;
-  });
-  // 去掉高亮 + 读完整词一遍（整体发音），再朗读中文释义，读完后再进入十遍速记
-  const t2 = setTimeout(() => {
-    if (flashAborted) return;
-    document.querySelectorAll('.syl-chip').forEach(c => c.classList.remove('active'));
-    speechSynthesis.cancel();
-    // 估算英文+中文朗读时长，作为兜底（防止 onend 不触发）
-    const enMs = Math.max(700, word.en.length * 90);
-    const zhMs = Math.max(700, (word.zh || '').length * 200);
-    const totalMs = enMs + zhMs + 500;
-    let cbFired = false;
-    const startRepeat = () => {
-      if (cbFired || flashAborted) return;
-      cbFired = true;
-      // 整体朗读结束后再停顿一下，进入十遍速记
-      const t3 = setTimeout(() => {
-        if (flashAborted) return;
-        flashStartRepeat(word, syls.length);
-      }, 300);
-      flashTimers.push(t3);
-    };
-    speakEnThenZh(word.en, word.zh, startRepeat);
-    // 兜底：若 onend 都不触发，按预估时长强制进入
-    const tFallback = setTimeout(startRepeat, totalMs + 1500);
-    flashTimers.push(tFallback);
-  }, offset + 100);
-  flashTimers.push(t2);
+  // ── 阶段①: 整体朗读一遍（英文 + 中文释义）──
+  const enMs = Math.max(700, word.en.length * 90);
+  const zhMs = Math.max(700, (word.zh || '').length * 200);
+  const totalMs = enMs + zhMs + 500;
+  let cbFired = false;
+  const startRepeat = () => {
+    if (cbFired || flashAborted) return;
+    cbFired = true;
+    // 整体朗读结束后再停顿一下，进入十遍速记
+    const t3 = setTimeout(() => {
+      if (flashAborted) return;
+      flashStartRepeat(word, (SYLLABLES[word.en] || [word.en]).length);
+    }, 300);
+    flashTimers.push(t3);
+  };
+  speakEnThenZh(word.en, word.zh, startRepeat);
+  // 兜底：若 onend 都不触发，按预估时长强制进入
+  const tFallback = setTimeout(startRepeat, totalMs + 1500);
+  flashTimers.push(tFallback);
 }
 
 function flashStartRepeat(word, sylCount) {
