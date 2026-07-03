@@ -2,13 +2,11 @@
    SERVICE WORKER - 离线缓存与更新管理
    ════════════════════════════════════════════ */
 
-const CACHE_NAME = 'kids-learning-v28';
+const CACHE_NAME = 'kids-learning-v29';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
-  './install.html',
   './manifest.json',
-  './sw.js',
   './src/data/words.js',
   './src/data/pinyin.js',
   './src/data/phonics.js',
@@ -29,26 +27,37 @@ const PRECACHE_ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
+  // 逐个缓存，单个失败不影响其他资源，避免 addAll 整体回滚
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(PRECACHE_ASSETS);
-    }),
-    self.skipWaiting()
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      await Promise.all(
+        PRECACHE_ASSETS.map(async (url) => {
+          try {
+            const res = await fetch(url, { cache: 'reload' });
+            if (res.ok) await cache.put(url, res.clone());
+          } catch (e) {
+            console.warn('[SW] precache miss:', url, e);
+          }
+        })
+      );
+      await self.skipWaiting();
+    })()
   );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)));
-    }),
-    self.clients.claim()
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)));
+      await self.clients.claim();
+    })()
   );
 });
 
 self.addEventListener('fetch', (event) => {
   const req = event.request;
-  // 只对 GET 请求处理；其他方法直接走网络
   if (req.method !== 'GET') return;
 
   // 导航请求：网络优先，失败回退到缓存的 index.html（离线 App Shell）
@@ -62,17 +71,32 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 其他请求：缓存优先，回退网络，失败时不回退 HTML
+  // 同源静态资源：网络优先 + 缓存回退；网络失败时用缓存兜底
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin) {
+    return; // 第三方资源（字体、CDN）不拦截
+  }
+
   event.respondWith(
-    caches.match(req).then(cached => {
-      if (cached) return cached;
-      return fetch(req).then(response => {
-        if (response.ok && new URL(req.url).origin === self.location.origin) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
+    (async () => {
+      try {
+        const netRes = await fetch(req);
+        if (netRes.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(req, netRes.clone());
         }
-        return response;
-      });
-    })
+        return netRes;
+      } catch (e) {
+        const cached = await caches.match(req);
+        if (cached) return cached;
+        // 子页面片段拿不到时返回空文档，避免 DOMParser 解析失败导致整页交互挂掉
+        if (req.destination === 'document' || url.pathname.endsWith('.html')) {
+          return new Response('<!DOCTYPE html><html><body></body></html>', {
+            headers: { 'Content-Type': 'text/html; charset=utf-8' }
+          });
+        }
+        return Response.error();
+      }
+    })()
   );
 });

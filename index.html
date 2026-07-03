@@ -968,8 +968,16 @@
   };
   await Promise.all(Object.entries(groups).map(async ([file, ids]) => {
     try {
-      const res = await fetch(`src/pages/${file}.html`);
+      const res = await fetch(`src/pages/${file}.html`, { cache: 'no-cache' });
+      if (!res.ok) {
+        console.error('Page group HTTP error:', file, res.status);
+        return;
+      }
       const html = await res.text();
+      if (!html || html.length < 20) {
+        console.error('Page group empty response:', file);
+        return;
+      }
       const doc = new DOMParser().parseFromString(html, 'text/html');
       ids.forEach(id => {
         const tpl = doc.getElementById('tpl-' + id);
