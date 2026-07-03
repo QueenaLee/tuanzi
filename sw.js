@@ -2,7 +2,7 @@
    SERVICE WORKER - 离线缓存与更新管理
    ════════════════════════════════════════════ */
 
-const CACHE_NAME = 'kids-learning-v39';
+const CACHE_NAME = 'kids-learning-v42';
 const PRECACHE_ASSETS = [
   './',
   './index.html',

@@ -87,7 +87,7 @@ function renderMathQ() {
   document.getElementById('math-next').disabled = true;
   const colors = ['#FFE4CC','#D0EEFF','#D8FFD8','#F0D8FF'];
   document.getElementById('math-opts').innerHTML = q.opts.map((o,i) => `
-    <div class="math-opt" style="background:${colors[i]};${q.type === 'compare-symbol' ? 'font-size:40px;' : ''}"
+    <div class="math-opt" style="background:${colors[i]};${q.type === 'compare-symbol' ? 'font-size:56px;' : ''}"
       onclick="mathSelect(this,'${o}','${q.ans}')">${o}</div>
   `).join('');
   // 题目展示后自动朗读一遍题目

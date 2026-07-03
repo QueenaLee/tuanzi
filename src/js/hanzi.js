@@ -43,7 +43,7 @@ function hzRenderCards() {
   const slice = words.slice(hzPage * HZ_PAGE_SIZE, hzPage * HZ_PAGE_SIZE + HZ_PAGE_SIZE);
   document.getElementById('hz-grid').innerHTML = slice.map(w => `
     <div class="hz-card" onclick="hzSpeak('${escAttr(w.py)}','${escAttr(w.c)}','${escAttr(w.words.join(','))}')">
-      <div style="font-size:36px">${w.e}</div>
+      <div style="font-size:44px">${w.e}</div>
       <div class="hz-char">${w.c}</div>
       <div class="hz-pinyin">${w.py}</div>
       <div style="margin-top:4px">${w.words.map(wd => `<span class="hz-word-tag">${wd}</span>`).join('')}</div>
@@ -160,8 +160,8 @@ function _hzShowStroke(idx) {
   const target = document.getElementById('hz-stroke-target');
   target.innerHTML = '';
   _hzWriter = HanziWriter.create(target, w.c, {
-    width: 180,
-    height: 180,
+    width: 240,
+    height: 240,
     padding: 5,
     showOutline: true,
     showCharacter: false,

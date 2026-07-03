@@ -25,7 +25,7 @@
   </div>
   <!-- 汉字卡片 -->
   <div id="hanzi-cards" style="display:none">
-    <div id="hz-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:16px 20px;max-width:560px;margin:0 auto"></div>
+    <div id="hz-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:18px;padding:18px 20px;max-width:600px;margin:0 auto"></div>
     <div class="page-nav">
       <button class="page-btn" id="hz-prev" onclick="hzChangePage(-1)">‹</button>
       <div class="page-info" id="hz-page-info">1 / 1</div>
@@ -33,17 +33,17 @@
     </div>
   </div>
   <!-- 笔画动画 -->
-  <div id="hanzi-stroke" style="display:none;padding:16px 20px 20px;max-width:520px;margin:0 auto">
+  <div id="hanzi-stroke" style="display:none;padding:16px 20px 20px;max-width:560px;margin:0 auto">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <button class="page-btn" id="hz-stroke-prev" onclick="hzStrokeNav(-1)">‹</button>
       <div style="text-align:center">
-        <div id="hz-stroke-char" style="font-size:64px;font-weight:900;color:var(--coral);line-height:1.1"></div>
-        <div id="hz-stroke-page" style="font-size:13px;color:var(--muted);margin-top:2px"></div>
+        <div id="hz-stroke-char" style="font-size:72px;font-weight:900;color:var(--coral);line-height:1.1"></div>
+        <div id="hz-stroke-page" style="font-size:14px;color:var(--muted);margin-top:2px"></div>
       </div>
       <button class="page-btn" id="hz-stroke-next" onclick="hzStrokeNav(1)">›</button>
     </div>
     <div class="stroke-canvas-wrap">
-      <div id="hz-stroke-target" style="width:180px;height:180px"></div>
+      <div id="hz-stroke-target" style="width:240px;height:240px"></div>
     </div>
     <div class="stroke-info" id="hz-stroke-info" style="text-align:center;margin:8px 0"></div>
     <div style="display:flex;gap:10px;margin-top:8px">
