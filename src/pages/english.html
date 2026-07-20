@@ -3,6 +3,7 @@
   <div class="topbar">
     <button class="back-btn" onclick="showPage('home')" aria-label="返回首页">←</button>
     <h2>📚⚡ 边学边记</h2>
+    <button class="wf-auto-btn" onclick="wfStartAutoFlash()" id="wf-auto-btn" title="随机播放速记">🔀 随机播放</button>
   </div>
   <div class="cat-tabs" style="justify-content:center; background:transparent; border-bottom:none;">
     <button class="cat-tab active" id="wf-tab-words" onclick="wfSwitchTab('words')">📚 单词速记</button>
@@ -68,6 +69,7 @@
   <div class="topbar">
     <button class="back-btn" onclick="flashStop(); showPage('home')" aria-label="返回首页">←</button>
     <h2>⚡ 十秒速记</h2>
+    <button id="flash-pause-btn" class="flash-pause-btn" style="display:none;" onclick="flashPause()" title="暂停并返回">⏸ 暂停</button>
   </div>
   <!-- 分类选择区 -->
   <div id="flash-cat-screen" style="padding:20px;max-width:480px;margin:0 auto;">
@@ -144,11 +146,11 @@
         <div class="sub-label">CVC 拼读</div>
         <div class="sub-desc">cat dog big…</div>
       </div>
-      <div class="sub-card full" onclick="showSub('phonics','songs')">
-        <span class="sub-icon">🎵</span>
-        <div class="sub-label">Phonics 顺口溜</div>
-        <div class="sub-desc">字母儿歌·发音口诀</div>
-      </div>
+<!--      <div class="sub-card full" onclick="showSub('phonics','songs')">-->
+<!--        <span class="sub-icon">🎵</span>-->
+<!--        <div class="sub-label">Phonics 顺口溜</div>-->
+<!--        <div class="sub-desc">字母儿歌·发音口诀</div>-->
+<!--      </div>-->
     </div>
   </div>
   <!-- 字母发音 -->

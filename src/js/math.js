@@ -141,7 +141,7 @@ function showMathResult() {
 /* ═══════════════════════════════════════════
    COMPARE  比大小
    两种题型随机：
-     ① 符号题：3 ○ 5，选项 > < ≥ ≤ =
+     ① 符号题：3 ○ 5，选项 > < =
      ② 填空题：X 比 Y 多/少 Z，X/Y/Z 中随机一个位置是 ？
 ═══════════════════════════════════════════ */
 function startCompareGame() {
@@ -154,13 +154,13 @@ function startCompareGame() {
   renderMathQ();
 }
 
-const COMPARE_SYMBOL_ZH = { '>': '大于', '<': '小于', '≥': '大于等于', '≤': '小于等于', '=': '等于' };
+const COMPARE_SYMBOL_ZH = { '>': '大于', '<': '小于', '=': '等于' };
 
 function genCompareQ() {
   return Math.random() < 0.5 ? genCompareSymbolQ() : genCompareBlankQ();
 }
 
-// 题型①：符号题  "3 ○ 5"  选项 > < ≥ ≤ =
+// 题型①：符号题  "3 ○ 5"  选项 > < =
 function genCompareSymbolQ() {
   const a = randInt(0, 10);
   const b = randInt(0, 10);
@@ -168,7 +168,7 @@ function genCompareSymbolQ() {
   if (a > b) sym = '>';
   else if (a < b) sym = '<';
   else sym = '=';
-  const opts = ['>', '<', '≥', '≤', '='];
+  const opts = ['>', '<', '='];
   return { type: 'compare-symbol', expr: `${a} ○ ${b}`, a, b, ans: sym, opts };
 }
 

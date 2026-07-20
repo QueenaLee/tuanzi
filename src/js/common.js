@@ -511,6 +511,11 @@ function flashRunWord() {
   if (flashIdx >= flashQueue.length) { flashShowDone(); return; }
 
   flashAborted = false;  // 开始新词，清除中断标志
+  // 随机播放模式：换词时用强拍节拍提示节奏
+  if (wfAutoFlashMode && flashIdx > 0) {
+    playTick(1047, 0.08, 0.5);   // 高频强拍（C6），换词提示
+    setTimeout(() => { if (!flashAborted) playTick(1047, 0.06, 0.35); }, 180);
+  }
   const word = flashQueue[flashIdx];
   const total = flashQueue.length;
   // 更新进度
@@ -858,9 +863,56 @@ function wfStartSingleFlash(wordEn) {
   flashRunWord();
 }
 
+/* ═══════════════════════════════════════════
+   WF AUTO FLASH  随机播放速记
+   点「随机播放」→ 从当前 tab 随机抽取 6 词
+   依次走完整速记流程（音节 + 10遍复读 + 节拍）
+   完成后返回 word-flash 并标记已记
+═══════════════════════════════════════════ */
+let wfAutoFlashMode = false;
+
+function wfStartAutoFlash() {
+  const isSentences = wfCurrentTab === 'sentences';
+  const pool = isSentences
+    ? shuffle(WORDS_LIST.filter(w => w.type === 'sentence')).slice(0, 6)
+    : shuffle(getImageWords()).slice(0, 6);
+  if (!pool.length) return;
+
+  wfAutoFlashMode = true;
+  wfReturnCtx = null;
+  flashIsSentence = isSentences;
+  flashQueue = pool;
+  flashIdx   = 0;
+  flashAborted = false;
+
+  document.getElementById('flash-cat-screen').style.display = 'none';
+  document.getElementById('flash-main').style.display = 'block';
+  document.querySelector('#flash .back-btn').onclick = () => {
+    wfAutoFlashMode = false;
+    flashStop();
+    showPage('word-flash');
+  };
+  showPage('flash');
+  flashRunWord();
+}
+
 function flashShowDone() {
   if (flashAborted) return;  // 中断后不弹结束页
   stopTimerRing();
+  // 随机播放批量速记完成
+  if (wfAutoFlashMode) {
+    wfAutoFlashMode = false;
+    flashQueue.forEach(w => { wfDoneSet.add(w.en); wfDsDoneSet.add(w.en); });
+    document.querySelector('#flash .back-btn').onclick = () => { flashStop(); showPage('home'); };
+    flashStop();
+    if (wfCurrentTab === 'sentences') { renderWfDsGrid(); } else { renderWfGrid(); }
+    showPage('word-flash');
+    setTimeout(() => {
+      const doneBtns = document.querySelectorAll('.wf-flash-btn.done');
+      if (doneBtns.length) burst(doneBtns[doneBtns.length - 1]);
+    }, 100);
+    return;
+  }
   // 如果是从 word-flash 跳进来的单词速记（自然完成才标记已记）
   if (wfReturnCtx) {
     const { wordEn } = wfReturnCtx;

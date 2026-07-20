@@ -90,6 +90,19 @@
 
   .topbar h2 { font-size: 22px; font-weight: 800; color: var(--text); }
 
+  .wf-auto-btn {
+    margin-left: auto; flex-shrink: 0;
+    padding: 8px 14px; border-radius: 20px;
+    background: linear-gradient(135deg, #FF8C00, #FFA500);
+    border: 2px solid #E07000;
+    color: #fff; font-size: 13px; font-weight: 800;
+    cursor: pointer; white-space: nowrap;
+    box-shadow: 0 3px 0 #C06000;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .wf-auto-btn:hover { transform: scale(1.06); }
+  .wf-auto-btn:active { transform: scale(0.95); box-shadow: none; }
+
   /* ── HOME PAGE ── */
   #home { background: linear-gradient(160deg, #FFF9F0 0%, #E8F4FD 50%, #F0FFF4 100%); }
 
@@ -951,7 +964,7 @@
 <div id="result" class="page"></div>
 <div class="confetti-container" id="confetti"></div>
 
-<script src="src/data/words.js?v=3"></script>
+<script src="src/data/words.js?v=4"></script>
 <script src="src/data/pinyin.js?v=3"></script>
 <script src="src/data/phonics.js?v=3"></script>
 <script src="src/data/hanzi.js?v=3"></script>
